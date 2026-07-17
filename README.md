@@ -2,26 +2,38 @@
 
 adminlove520 全量仓库本地备份脚本，支持断点续传、失败重试。
 
-## 使用方法
+## 使用方法（Windows）
 
-### Windows
+### 方法一：直接运行 PowerShell（推荐）
 ```powershell
-# 1. 克隆本仓库
+# 1. 克隆仓库
 git clone https://github.com/adminlove520/github-backup-tool.git
 cd github-backup-tool
 
 # 2. 运行备份脚本
-bash backup.sh
-# 或者用 Git Bash
-./backup.sh
+powershell -ExecutionPolicy Bypass -File backup.ps1
 ```
 
-### Linux / Mac
+### 方法二：双击运行
+下载仓库后双击 `run.bat` 即可启动备份。
+
+## 使用方法（Linux / Mac）
 ```bash
 git clone https://github.com/adminlove520/github-backup-tool.git
 cd github-backup-tool
 chmod +x backup.sh
 ./backup.sh
+```
+
+## 配置说明
+
+编辑 `backup.ps1` 开头部分可修改以下配置：
+
+```powershell
+$GitHubUser   = "adminlove520"   # GitHub 用户名
+$BackupBaseDir = "D:\github_repos\github_backup"  # 备份根目录
+$MaxParallel   = 3              # 并行克隆数量（建议不超过3）
+$CloneDelayMs  = 1500           # 每次克隆间隔（毫秒），避免限速
 ```
 
 ## 备份说明
@@ -37,6 +49,9 @@ chmod +x backup.sh
 共 **722** 个仓库（public），全部来自 adminlove520 账号。
 
 ## 常见问题
+
+**Q: 提示"无法加载文件"？**
+> 使用 `powershell -ExecutionPolicy Bypass -File backup.ps1` 运行。
 
 **Q: 克隆失败/超时怎么办？**
 > 脚本已自动处理失败仓库，记录在 `.fail.txt`，重新运行脚本即可继续。
