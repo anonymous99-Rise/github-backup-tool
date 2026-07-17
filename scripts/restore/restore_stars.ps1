@@ -37,17 +37,20 @@ Log "Token: $($Token.Substring(0,4))..." "Gray"
 
 # 2. 自动找 JSON 文件
 $safeName = $username -replace '[^a-zA-Z0-9]', '_'
+# 优先从 data/ 目录找（项目结构调整后）
+$dataDir = Join-Path (Split-Path (Split-Path $PSScriptRoot) "data")
 $jsonPatterns = @(
-    "stars_${username}.json",
-    "stars_${safeName}.json",
-    "starred_${username}.json",
-    "starred_repos.json",
-    "stars.json"
+    (Join-Path $dataDir "starred_repos.json"),
+    (Join-Path $dataDir "stars_${username}.json"),
+    (Join-Path $dataDir "stars_${safeName}.json"),
+    (Join-Path $PSScriptRoot "stars_${username}.json"),
+    (Join-Path $PSScriptRoot "stars_${safeName}.json"),
+    (Join-Path $PSScriptRoot "starred_repos.json"),
+    (Join-Path $PSScriptRoot "stars.json")
 )
 
 $foundJson = $null
-foreach ($p in $jsonPatterns) {
-    $path = Join-Path $PSScriptRoot $p
+foreach ($path in $jsonPatterns) {
     if (Test-Path $path) {
         $foundJson = $path
         break

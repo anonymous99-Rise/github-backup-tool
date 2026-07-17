@@ -15,10 +15,12 @@ param(
     [string]$OutputFile = ""
 )
 
-# 默认输出到当前目录
+# 默认输出到 data/ 目录
+$projectDir = Split-Path (Split-Path $PSScriptRoot)
+$dataDir = Join-Path $projectDir "data"
 if (-not $OutputFile) {
     $safeName = $Username -replace '[^a-zA-Z0-9]', '_'
-    $OutputFile = Join-Path $PSScriptRoot "stars_${safeName}.json"
+    $OutputFile = Join-Path $dataDir "stars_${safeName}.json"
 }
 
 $headers = @{
