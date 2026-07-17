@@ -13,14 +13,16 @@
 set -euo pipefail
 
 # ---- 配置 ----
-BACKUP_DIR="./github_backup_$(date +%Y%m%d)"
-REPO_LIST="$(dirname "$0")/repo_list.txt"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+BACKUP_DIR="${PROJECT_DIR}/github_backup_$(date +%Y%m%d)"
+REPO_LIST="${PROJECT_DIR}/data/repo_list.txt"
 DONE_FILE="$BACKUP_DIR/.done.txt"
 FAIL_FILE="$BACKUP_DIR/.fail.txt"
 LOG_FILE="$BACKUP_DIR/backup.log"
-MAX_PARALLEL=4          # 并行克隆数（建议不要超过4，避免触发限速）
+MAX_PARALLEL=4
 GITHUB_USER="adminlove520"
-CLONE_DELAY=1            # 每次克隆后等待秒数（避免GitHub限速）
+CLONE_DELAY=1
 # --------------
 
 mkdir -p "$BACKUP_DIR"
