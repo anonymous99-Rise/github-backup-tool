@@ -1,11 +1,14 @@
 # GitHub Stars Restorer
 # Usage: powershell -ExecutionPolicy Bypass -File restore_stars.ps1 -Token "ghp_xxx"
+# Note: starred_repos.json must be in the same folder as this script
 
-param(
-    [Parameter(Mandatory=$true)]
-    [string]$Token,
-    [string]$JsonFile = "$PSScriptRoot\starred_repos.json"
-)
+$JsonFile = Join-Path $PSScriptRoot "starred_repos.json"
+$Token = $args[0]
+
+if (-not $Token) {
+    Write-Host "Usage: powershell -ExecutionPolicy Bypass -File restore_stars.ps1 -Token ""ghp_xxx""" -ForegroundColor Red
+    exit 1
+}
 
 $headers = @{
     "Authorization" = "token $Token"
@@ -19,7 +22,12 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 $me = Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $headers -Method GET -TimeoutSec 10
 Write-Host "Account: $($me.login)" -ForegroundColor Green
-Write-Host ""
+Write-Host "JSON: $JsonFile" -ForegroundColor Gray
+
+if (-not (Test-Path $JsonFile)) {
+    Write-Host "[ERROR] JSON file not found: $JsonFile" -ForegroundColor Red
+    exit 1
+}
 
 $repos = Get-Content $JsonFile -Encoding UTF8 | ConvertFrom-Json
 $total = $repos.Count
