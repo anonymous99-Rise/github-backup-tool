@@ -1,38 +1,45 @@
-# GitHub Stars Restorer - Flush版
+# GitHub Stars Restorer - 实时日志版
 param(
     [Parameter(Mandatory=$true)]
     [string]$Token
 )
 
 $JsonFile = Join-Path $PSScriptRoot "starred_repos.json"
+$LogFile = Join-Path $PSScriptRoot "restore.log"
 
 $headers = @{
     "Authorization" = "token $Token"
     "Accept" = "application/vnd.github.v3+json"
 }
 
-function Write-Flush($msg, $color) {
-    if ($color) { Write-Host $msg -ForegroundColor $color }
-    else { Write-Host $msg }
-    [Console]::Out.Flush()
+# 清空日志
+"" | Out-File $LogFile -Encoding UTF8
+
+function Log($msg, $color) {
+    $ts = Get-Date -Format "HH:mm:ss"
+    $line = "[$ts] $msg"
+    $line | Out-File $LogFile -Append -Encoding UTF8
+    if ($color) { Write-Host $line -ForegroundColor $color }
+    else { Write-Host $line }
 }
 
-Write-Flush "========================================" "Cyan"
-Write-Flush " GitHub Star Restorer" "Cyan"
-Write-Flush "========================================" "Cyan"
+Log "========================================" "Cyan"
+Log " GitHub Star Restorer" "Cyan"
+Log "========================================" "Cyan"
 
 $me = Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $headers -Method GET -TimeoutSec 10
-Write-Flush "Account: $($me.login)" "Green"
+Log "Account: $($me.login)" "Green"
 
 if (-not (Test-Path $JsonFile)) {
-    Write-Flush "[ERROR] JSON not found: $JsonFile" "Red"
+    Log "[ERROR] JSON not found: $JsonFile" "Red"
     exit 1
 }
 
 $repos = Get-Content $JsonFile -Encoding UTF8 | ConvertFrom-Json
 $total = $repos.Count
-Write-Flush "Total to star: $total"
-Write-Flush "Starting now..."
+Log "Total to star: $total"
+Log "Log: $LogFile"
+Log "Starting..."
 
 $done = $fail = $already = 0
 
@@ -51,16 +58,16 @@ foreach ($repo in $repos) {
         if ($statusCode -eq 304) { $already++ }
         else {
             $fail++
-            Write-Flush "[FAIL] $fullName (HTTP $statusCode)" "Yellow"
+            Log "[FAIL] $fullName (HTTP $statusCode)" "Yellow"
         }
     }
 
-    if ($done % 100 -eq 0) {
-        Write-Flush "[$done / $total] Done:$done  Already:$already  Fail:$fail" "Yellow"
+    if ($done % 10 -eq 0) {
+        Log "[$done / $total] Done:$done  Already:$already  Fail:$fail" "Gray"
     }
 }
 
-Write-Flush ""
-Write-Flush "========================================" "Green"
-Write-Flush "DONE! Done:$done  Already:$already  Fail:$fail" "Green"
-Write-Flush "========================================" "Green"
+Log ""
+Log "========================================" "Green"
+Log "DONE! Done:$done  Already:$already  Fail:$fail" "Green"
+Log "========================================" "Green"
