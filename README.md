@@ -25,16 +25,22 @@ chmod +x backup.sh
 ./backup.sh
 ```
 
-## 配置说明
+## 配置 Token（可选，加速克隆）
 
-编辑 `backup.ps1` 开头部分可修改以下配置：
+公共仓库也可以不填 Token 克隆，但有 Token 速度更快且不限速。
 
+**方式一：运行时传入 Token**
 ```powershell
-$GitHubUser   = "adminlove520"   # GitHub 用户名
-$BackupBaseDir = "D:\github_repos\github_backup"  # 备份根目录
-$MaxParallel   = 3              # 并行克隆数量（建议不超过3）
-$CloneDelayMs  = 1500           # 每次克隆间隔（毫秒），避免限速
+powershell -ExecutionPolicy Bypass -File backup.ps1 -Token "ghp_xxxx"
 ```
+
+**方式二：编辑脚本，填到第 12 行**
+```powershell
+[string]$Token = "ghp_xxxx",   # 填你的 Token
+```
+
+Token 申请地址：https://github.com/settings/tokens
+需要 `repo` 权限即可。
 
 ## 备份说明
 
