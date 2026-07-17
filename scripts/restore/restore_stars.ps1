@@ -91,6 +91,22 @@ foreach ($repo in $repos) {
         $statusCode = [int]$_.Exception.Response.StatusCode
         if ($statusCode -eq 304) {
             $already++
+        } elseif ($statusCode -eq 429) {
+            # Rate limit hit - sleep and retry once
+            $retryAfter = 60
+            try {
+                $retryAfter = [int]$_.Exception.Response.Headers["Retry-After"][0]
+            } catch {}
+            Log "[RATE LIMIT] sleeping ${retryAfter}s..." "Yellow"
+            Start-Sleep -Seconds ($retryAfter + 1)
+            try {
+                Invoke-RestMethod -Uri "https://api.github.com/user/starred/$owner/$name" `
+                    -Headers $headers -Method PUT -TimeoutSec 30 | Out-Null
+                $done++
+            } catch {
+                $fail++
+                Log "[FAIL] $fullName (HTTP $($_.Exception.Response.StatusCode))" "Yellow"
+            }
         } else {
             $fail++
             Log "[FAIL] $fullName (HTTP $statusCode)" "Yellow"
