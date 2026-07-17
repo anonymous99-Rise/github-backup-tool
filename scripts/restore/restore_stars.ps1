@@ -30,7 +30,8 @@ Write-Host "========================================" -ForegroundColor Cyan
 
 $me = Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $headers -Method GET -TimeoutSec 10
 $username = $me.login
-$LogFile = Join-Path $PSScriptRoot "restore_${username}.log"
+$projectDir = Split-Path (Split-Path $PSScriptRoot)
+$LogFile = Join-Path $projectDir "restore_stars_${username}.log"
 
 Log "Account: $username" "Green"
 Log "Token: $($Token.Substring(0,4))..." "Gray"

@@ -1,10 +1,20 @@
+$projectDir = Split-Path (Split-Path $PSScriptRoot)
+$dataDir = Join-Path $projectDir "data"
+$defaultList = Join-Path $dataDir "repo_list.txt"
+
 param(
-    [string]$GitHubUser = "adminlove520",
-    [string]$Token = "",               # GitHub Token (optional)
-    [string]$RepoListFile = "$PSScriptRoot\repo_list.txt",
+    [string]$GitHubUser = "",
+    [string]$Token = "",
+    [string]$RepoListFile = $defaultList,
     [string]$BackupBaseDir = "D:\github_repos\github_backup",
     [int]$CloneDelayMs = 1000
 )
+
+# 自动识别账号
+if (-not $GitHubUser -and $Token) {
+    $h = @{Authorization="token $Token"; Accept="application/vnd.github.v3+json"}
+    $GitHubUser = (Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $h -TimeoutSec 10).login
+}
 
 $BackupDir = "$BackupBaseDir\github_backup_$(Get-Date -Format 'yyyyMMdd')"
 $DONE_FILE = Join-Path $BackupDir ".done.txt"

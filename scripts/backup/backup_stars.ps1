@@ -1,6 +1,9 @@
+$projectDir = Split-Path (Split-Path $PSScriptRoot)
+$dataDir = Join-Path $projectDir "data"
+$defaultList = Join-Path $dataDir "starred_list.txt"
 param(
     [string]$Token = "",
-    [string]$RepoListFile = "$PSScriptRoot\starred_list.txt",
+    [string]$RepoListFile = $defaultList,
     [string]$BackupBaseDir = "D:\github_repos\github_backup",
     [int]$CloneDelayMs = 800
 )
