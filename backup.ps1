@@ -10,6 +10,7 @@
 
 param(
     [string]$GitHubUser = "adminlove520",
+    [string]$Token = "",               # GitHub Token（可选，不填则用公共clone地址）
     [string]$RepoListFile = "$PSScriptRoot\repo_list.txt",
     [string]$BackupBaseDir = "D:\github_repos\github_backup",
     [int]$MaxParallel = 3,            # 并行克隆数量（建议不超过3）
@@ -42,7 +43,13 @@ function Clone-One {
         return $true
     }
 
-    $url = "https://github.com/$GitHubUser/${repo}.git"
+    # 构建 clone URL（有token用token，无token用公共地址）
+    if ([string]::IsNullOrWhiteSpace($Token)) {
+        $url = "https://github.com/$GitHubUser/${repo}.git"
+    } else {
+        $url = "https://$Token@github.com/$GitHubUser/${repo}.git"
+    }
+
     Write-Log "[克隆中] $repo"
 
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
