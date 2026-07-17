@@ -1,4 +1,4 @@
-# GitHub Stars Restorer
+# GitHub Stars Restorer - Fast版
 param(
     [Parameter(Mandatory=$true)]
     [string]$Token
@@ -12,7 +12,7 @@ $headers = @{
 }
 
 Write-Host "========================================"
-Write-Host " GitHub Star Restorer"
+Write-Host " GitHub Star Restorer (Fast)"
 Write-Host "========================================"
 
 $me = Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $headers -Method GET -TimeoutSec 10
@@ -26,6 +26,7 @@ if (-not (Test-Path $JsonFile)) {
 $repos = Get-Content $JsonFile -Encoding UTF8 | ConvertFrom-Json
 $total = $repos.Count
 Write-Host "Total to star: $total"
+Write-Host "Starting..." -ForegroundColor Gray
 
 $done = $fail = $already = 0
 
@@ -37,7 +38,7 @@ foreach ($repo in $repos) {
 
     try {
         Invoke-RestMethod -Uri "https://api.github.com/user/starred/$owner/$name" `
-            -Headers $headers -Method PUT -TimeoutSec 15
+            -Headers $headers -Method PUT -TimeoutSec 30
         $done++
     } catch {
         $statusCode = [int]$_.Exception.Response.StatusCode
@@ -49,11 +50,11 @@ foreach ($repo in $repos) {
     }
 
     if ($done % 100 -eq 0) {
-        Write-Host "Progress: $done / $total  done:$done  already:$already  fail:$fail"
+        Write-Host "[$done / $total] Done:$done  Already:$already  Fail:$fail"
     }
-
-    Start-Sleep -Milliseconds 120
 }
 
 Write-Host ""
-Write-Host "DONE! Done:$done  Already:$already  Failed:$fail"
+Write-Host "========================================"
+Write-Host "DONE! Done:$done  Already:$already  Fail:$fail"
+Write-Host "========================================"
