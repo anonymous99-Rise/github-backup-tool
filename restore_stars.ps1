@@ -1,39 +1,33 @@
 # GitHub Stars Restorer
-# Usage: powershell -ExecutionPolicy Bypass -File restore_stars.ps1 -Token "ghp_xxx"
-# Note: starred_repos.json must be in the same folder as this script
+param(
+    [Parameter(Mandatory=$true)]
+    [string]$Token
+)
 
 $JsonFile = Join-Path $PSScriptRoot "starred_repos.json"
-$Token = $args[0]
-
-if (-not $Token) {
-    Write-Host "Usage: powershell -ExecutionPolicy Bypass -File restore_stars.ps1 -Token ""ghp_xxx""" -ForegroundColor Red
-    exit 1
-}
 
 $headers = @{
     "Authorization" = "token $Token"
     "Accept" = "application/vnd.github.v3+json"
-    "User-Agent" = "Tresh-King-StarRestore"
 }
 
-Write-Host "========================================" -ForegroundColor Cyan
-Write-Host " GitHub Star Restorer" -ForegroundColor Cyan
-Write-Host "========================================" -ForegroundColor Cyan
+Write-Host "========================================"
+Write-Host " GitHub Star Restorer"
+Write-Host "========================================"
 
 $me = Invoke-RestMethod -Uri "https://api.github.com/user" -Headers $headers -Method GET -TimeoutSec 10
-Write-Host "Account: $($me.login)" -ForegroundColor Green
-Write-Host "JSON: $JsonFile" -ForegroundColor Gray
+Write-Host "Account: $($me.login)"
 
 if (-not (Test-Path $JsonFile)) {
-    Write-Host "[ERROR] JSON file not found: $JsonFile" -ForegroundColor Red
+    Write-Host "[ERROR] JSON not found: $JsonFile" -ForegroundColor Red
     exit 1
 }
 
 $repos = Get-Content $JsonFile -Encoding UTF8 | ConvertFrom-Json
 $total = $repos.Count
-$done = $fail = $already = 0
+Write-Host "Total to star: $total"
 
-Write-Host "Total to star: $total`n"
+$done = $fail = $already = 0
 
 foreach ($repo in $repos) {
     $fullName = $repo.full_name
@@ -47,23 +41,19 @@ foreach ($repo in $repos) {
         $done++
     } catch {
         $statusCode = [int]$_.Exception.Response.StatusCode
-        if ($statusCode -eq 304) {
-            $already++
-        } else {
+        if ($statusCode -eq 304) { $already++ }
+        else {
             $fail++
-            Write-Host "  [FAIL] $fullName (HTTP $statusCode)"
+            Write-Host "[FAIL] $fullName (HTTP $statusCode)"
         }
     }
 
-    if ($done % 100 -eq 0 -and $done -gt 0) {
-        Write-Host "Progress: $done / $total  done:$done  already:$already  fail:$fail" -ForegroundColor Yellow
+    if ($done % 100 -eq 0) {
+        Write-Host "Progress: $done / $total  done:$done  already:$already  fail:$fail"
     }
 
     Start-Sleep -Milliseconds 120
 }
 
 Write-Host ""
-Write-Host "========================================" -ForegroundColor Green
-Write-Host " DONE!" -ForegroundColor Green
-Write-Host " Done: $done  Already starred: $already  Failed: $fail"
-Write-Host "========================================" -ForegroundColor Green
+Write-Host "DONE! Done:$done  Already:$already  Failed:$fail"
